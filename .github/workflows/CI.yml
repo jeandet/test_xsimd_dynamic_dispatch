@@ -1,0 +1,42 @@
+name: Build and test wheels on multiple platforms
+
+on:
+  release:
+    types: [published]
+  push:
+  pull_request:
+
+jobs:
+
+  build_wheels:
+    name: ${{ matrix.os }} build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}-${{ matrix.os }}
+          max-size: "5G"
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+        with:
+          arch: amd64
+      - name: Build
+        run: |
+          python -m pip install --upgrade meson ninja
+          meson setup builddir --buildtype=release
+          meson compile -C builddir -v 
+      - name: Test
+        run: |
+          meson test -C builddir --verbose
+          
