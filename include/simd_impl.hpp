@@ -1,6 +1,7 @@
 #pragma once
 #include <xsimd/xsimd.hpp>
 #include <cstdint>
+#include <iostream>
 
 struct _test_simd_op
 {
@@ -15,7 +16,7 @@ void _test_simd_op::operator()(
 {
     using batch_type = xsimd::batch<int64_t, Arch>;
     constexpr std::size_t batch_size = batch_type::size;
-
+    std::cout << "Using architecture: " << Arch::name() << " with batch size " << batch_size << std::endl;
     std::size_t i = 0;
     for (; i + batch_size <= count; i += batch_size)
     {
